@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WelcomeSlider</string>
+    <string name="app_name">MeuHospital</string>
     <string name="title_activity_welcome">Home Screen</string>
     <string name="next">NEXT</string>
     <string name="skip">SKIP</string>
@@ -14,8 +14,8 @@
     <string name="slide_3_title">Encontre o Atendimento correto</string>
     <string name="slide_3_desc">Os serviços de atendimento que você procura nos hospitais que tem esse atendimento</string>
 
-    <string name="slide_4_title">Faça suas Consultas</string>
-    <string name="slide_4_desc">Encontre os Hospitais com o atendimento e agendamento para consultas médicas</string>
+    <string name="slide_4_title">Histórico Médico</string>
+    <string name="slide_4_desc">Todos os seus registros de consultas salvos em um só lugar.</string>
 
     <string name="play_again_desc">To see the welcome slider again, goto Settings -> apps -> welcome slider -> clear data</string>
     <string name="play_again">Play Again</string>
