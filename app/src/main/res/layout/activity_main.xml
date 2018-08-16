@@ -56,6 +56,8 @@
         android:paddingLeft="25dp"
         android:paddingRight="25dp"
         android:paddingTop="5dp"
+        app:theme="@style/ThemeOverlay.AppCompat.navTheme"
+        app:itemBackground="@android:color/transparent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.614"
         app:layout_constraintLeft_toLeftOf="parent"

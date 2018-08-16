@@ -11,4 +11,20 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="ThemeOverlay.AppCompat.navTheme">
+
+        <!-- Color of text and icon when SELECTED -->
+        <item name="colorPrimary">#FE0458</item>
+
+        <!-- Background color when SELECTED -->
+        <item name="colorControlHighlight">#FE0458</item>
+
+    </style>
+
 </resources>
+
+<!--CORES EXTRAS-->
+
+    <!-- Amarelo:           #F6A41B   -->
+    <!-- Rosa Avermelhado: #FE0458   -->
+    <!-- Rosa Avermelhado: #FC4093   -->
