@@ -37,7 +37,7 @@
         android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
         android:clickable="true"
-        app:backgroundTint="@android:color/holo_red_light"
+        app:backgroundTint="@color/rosa_avermelhado"
         app:layout_constraintBottom_toTopOf="@+id/navigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/ic_phone_branco_24dp" />
