@@ -28,8 +28,7 @@
         android:queryHint="Hospital Salgado Filho..."
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:iconifiedByDefault="@drawable/ic_main_menu_list_7dp"/>
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/floatingActionButton"
