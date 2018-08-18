@@ -199,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                mMap.getUiSettings().setCompassEnabled(false);
 
             }
         });
