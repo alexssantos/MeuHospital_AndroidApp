@@ -16,11 +16,11 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -34,6 +34,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String FINE_PERMISSION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COARSE_PERMISSION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private static final float ZOOM_PADRAO = 15f;
+    private static final float INCLINACAO_ANGULO_PADRAO = 45f;
+    private static final float ROTACAO_PADRAO = 0f;
+    private static final LatLng LOCAL_PADRAO_RJ = new LatLng(-22.9088363,-43.1927289);
 
 
     //variaveis
@@ -71,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.d(TAG, "onComplete: localização encontrada");
 
                             Location localizacaoAtual = (Location) task.getResult();
-                            moverCamera(new LatLng(localizacaoAtual.getLatitude(), localizacaoAtual.getLongitude()), ZOOM_PADRAO);
+                            moverCamera(new LatLng(localizacaoAtual.getLatitude(), localizacaoAtual.getLongitude()), ZOOM_PADRAO, INCLINACAO_ANGULO_PADRAO);
 
                         } else {
                             Log.d(TAG, "onComplete: localização atual está Null");
@@ -87,9 +90,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void moverCamera(LatLng latLng, float zoom) {
+/*
+
+        moves halfway along an arc between straight
+        OVERHEAD (0 degrees) and the
+        GROUND (90 degrees), to position
+*/
+    private void moverCamera(LatLng latLng, float zoom, float inclinacao) {
         Log.d(TAG, "moverCamera: movendo a camera para: Lat: " + latLng.latitude + ", Long: " + latLng.longitude);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+//      Position( LatLong latLong, zoom, rotação, inclinação)
+        mMap.moveCamera(CameraUpdateFactory.newCameraPosition( new CameraPosition(latLng ,zoom, inclinacao, ROTACAO_PADRAO)));
+
     }
 
     //Verficação da conexaxao do Google Services
@@ -169,7 +180,15 @@ public class MainActivity extends AppCompatActivity {
                 mMap = googleMap;
 
                 //Pegar Localização Atual do Usuario
-                pegarLocalizacaoUsuario();
+//                pegarLocalizacaoUsuario();
+
+                //Iniciar Mapa no RJ - Centro - Hosp. Souza Aguiar
+//                moverCamera(LatLong Local , float Zoom);
+                mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(
+                        LOCAL_PADRAO_RJ,
+                        ZOOM_PADRAO,
+                        INCLINACAO_ANGULO_PADRAO,
+                        ROTACAO_PADRAO)));
 
                 //Marcar localização Atual Usuario
                 if (ActivityCompat.checkSelfPermission(getApplicationContext(),
@@ -180,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
-                
+
             }
         });
     }
