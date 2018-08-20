@@ -16,14 +16,21 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -98,10 +105,64 @@ public class MainActivity extends AppCompatActivity {
 */
     private void moverCamera(LatLng latLng, float zoom, float inclinacao) {
         Log.d(TAG, "moverCamera: movendo a camera para: Lat: " + latLng.latitude + ", Long: " + latLng.longitude);
-//      Position( LatLong latLong, zoom, rotação, inclinação)
+
+        //      Position( LatLong latLong, zoom, rotação, inclinação)
         mMap.moveCamera(CameraUpdateFactory.newCameraPosition( new CameraPosition(latLng ,zoom, inclinacao, ROTACAO_PADRAO)));
 
+        Marcadores();
     }
+
+    private void MarcadoresNaUnha (){
+        ArrayList<Marker> markers = new ArrayList<>();
+
+
+        Marker m1 = mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(-22.9095577,-43.1915863))
+                .title("INCA"));
+
+        Marker m2 = mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(-22.9091885,-43.1887256))
+                .title("Policlinica Geral do Rio de Janeiro"));
+
+        Marker m3 = mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(-22.9146178,-43.2002586))
+                .title("Hospital Central da Policia Militar"));
+
+        markers.add(m1);
+        markers.add(m2);
+        markers.add(m3);
+
+    }
+
+    private void Marcadores (){
+
+        MarkerOptions options = new MarkerOptions();
+        ArrayList<LatLng> latlngs = new ArrayList<>();
+
+        //You can add to the list of latlngs by,
+        latlngs.add(new LatLng(-22.9095577,-43.1915863));
+        latlngs.add(new LatLng(-22.9091885,-43.1887256));
+        latlngs.add(new LatLng(-22.9146178,-43.2002586));
+
+
+        //And then, use for loop to set them on the map.
+        for (LatLng point : latlngs) {
+            options.position(point);
+            options.title("someTitle");
+            mMap.addMarker(options);
+        }
+    }
+
+//    protected Marker createMarker(double latitude, double longitude, String title, String snippet, int iconResID) {
+//
+//        return mMap.addMarker(new MarkerOptions()
+//                .position(new LatLng(latitude, longitude))
+//                .anchor(0.5f, 0.5f)
+//                .title(title)
+//                .snippet(snippet)
+//                .icon(BitmapDescriptorFactory.fromResource(iconResID)));
+//    }
+
 
     //Verficação da conexaxao do Google Services
     public boolean servicoMapOK() {
