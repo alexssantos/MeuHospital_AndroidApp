@@ -2,7 +2,13 @@ package seven.team.com.meuhospital;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -31,6 +37,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -113,24 +120,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void MarcadoresNaUnha (){
-        ArrayList<Marker> markers = new ArrayList<>();
+        Log.d(TAG, "MarcadorNaUnha: Adding markers");
 
+        Bitmap bitmap = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_add_location);
 
-        Marker m1 = mMap.addMarker(new MarkerOptions()
+        Marker m1 = mMap.addMarker(
+                new MarkerOptions()
                 .position(new LatLng(-22.9095577,-43.1915863))
-                .title("INCA"));
+                .title("INCA")
 
-        Marker m2 = mMap.addMarker(new MarkerOptions()
+//                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_add_location)));
+                .icon(BitmapDescriptorFactory.fromBitmap( bitmap)));
+
+        Marker m2 = mMap.addMarker(
+                new MarkerOptions()
                 .position(new LatLng(-22.9091885,-43.1887256))
                 .title("Policlinica Geral do Rio de Janeiro"));
 
-        Marker m3 = mMap.addMarker(new MarkerOptions()
+        Marker m3 = mMap.addMarker(
+                new MarkerOptions()
                 .position(new LatLng(-22.9146178,-43.2002586))
                 .title("Hospital Central da Policia Militar"));
-
-        markers.add(m1);
-        markers.add(m2);
-        markers.add(m3);
 
     }
 
@@ -261,6 +271,8 @@ public class MainActivity extends AppCompatActivity {
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
                 mMap.getUiSettings().setCompassEnabled(false);
+
+                MarcadoresNaUnha();
 
             }
         });
