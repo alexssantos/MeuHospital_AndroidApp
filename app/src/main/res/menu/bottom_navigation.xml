@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-
-   <group android:id="@+id/first_section">
-
-        <item
-
-            android:id="@+id/navigation_item1"
-            android:icon="@drawable/ic_coracao_12dp"
-            android:title="Seviços"
-            />
-   </group>
-
+    <item
+        android:id="@+id/navigation_item1"
+        android:icon="@drawable/ic_coracao_12dp"
+        android:title="Seviços"
+        />
 
    <item android:id="@+id/navigation_item3"
-        android:icon="@drawable/ic_main_menu_list"
+        android:icon="@drawable/ic_hospital_12dp"
         android:title="Todos"
         />
 
