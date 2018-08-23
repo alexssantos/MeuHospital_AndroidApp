@@ -4,7 +4,11 @@
     android:padding="10dp"
     android:shape="rectangle">
 
-    <solid android:color="#FFFFFF" />
+<!--#AAB1C2D3 | AA = alfa channel = transparencia = opacity -->
+<!--ALFA CHANNEL MATERIAL DESIGN - https://stackoverflow.com/questions/5445085/understanding-colors-on-android-six-characters/41121016#41121016-->
+
+    <solid android:color="#DEFFFFFF"
+        />
     <corners
         android:radius="6dp"/>
 
