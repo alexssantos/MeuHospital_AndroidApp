@@ -122,15 +122,15 @@ public class MainActivity extends AppCompatActivity {
     private void MarcadoresNaUnha (){
         Log.d(TAG, "MarcadorNaUnha: Adding markers");
 
-        Bitmap bitmap = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_add_location);
+        //Bitmap bitmap = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_add_location);
 
         Marker m1 = mMap.addMarker(
                 new MarkerOptions()
                 .position(new LatLng(-22.9095577,-43.1915863))
-                .title("INCA")
+                .title("INCA"));
 
 //                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_add_location)));
-                .icon(BitmapDescriptorFactory.fromBitmap( bitmap)));
+                //.icon(BitmapDescriptorFactory.fromBitmap( bitmap)));
 
         Marker m2 = mMap.addMarker(
                 new MarkerOptions()
