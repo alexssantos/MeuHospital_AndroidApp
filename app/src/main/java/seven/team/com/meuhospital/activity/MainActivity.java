@@ -1,43 +1,39 @@
-package seven.team.com.meuhospital;
+package seven.team.com.meuhospital.activity;
 
 import android.Manifest;
 import android.app.Dialog;
-import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.support.annotation.NonNull;
+import android.support.design.internal.BottomNavigationItemView;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
-import java.util.List;
+
+import seven.team.com.meuhospital.R;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -58,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
 
+    BottomNavigationItemView btnListAllHospitais, btnListByTags, btnListByCloser;
+    FloatingActionButton btnEmergenceCall;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +67,49 @@ public class MainActivity extends AppCompatActivity {
             //Permissao OK -> Inicializa MAPA
             //Permissao NAO OK -> GET Permissao + Inicializar MAPA
         }
+
+        //Buttons Find ID
+        btnListAllHospitais = findViewById(R.id.btnListByHospitais);
+        btnListByTags = findViewById(R.id.btnListByTag);
+        btnListByCloser= findViewById(R.id.btnListByCloser);
+        btnEmergenceCall = findViewById(R.id.btnEmergenceCall);
+
+        btnListAllHospitais.setOnClickListener(listHospitaisActivity);
+        btnListByTags.setOnClickListener(listHospitaisActivity);
+        btnListByCloser.setOnClickListener(listHospitaisActivity);
+
     }
+
+    private View.OnClickListener listHospitaisActivity = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case (R.id.btnListByHospitais):
+                    //TODO: Logica de pegar a busca desse metodo e add na Intent
+
+
+                    Intent intent1 = new Intent(getApplicationContext(), HospitalsListActivity.class);
+                    startActivity(intent1);
+                    break;
+                case (R.id.btnListByTag):
+                    //TODO: Logica de pegar a busca desse metodo e add na Intent
+
+
+
+                    Intent intent2 = new Intent(getApplicationContext(), HospitalsListActivity.class);
+                    startActivity(intent2);
+                    break;
+                case (R.id.btnListByCloser):
+                    //TODO: Logica de pegar a busca desse metodo e add na Intent
+
+
+
+                    Intent intent3 = new Intent(getApplicationContext(), HospitalsListActivity.class);
+                    startActivity(intent3);
+                    break;
+            }
+        }
+    };
 
     private void pegarLocalizacaoUsuario() {
         Log.d(TAG, "pegarLocalizacaoUsuario: pegando a atual localização do usuario");
@@ -105,7 +145,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 /*
-
         moves halfway along an arc between straight
         OVERHEAD (0 degrees) and the
         GROUND (90 degrees), to position
