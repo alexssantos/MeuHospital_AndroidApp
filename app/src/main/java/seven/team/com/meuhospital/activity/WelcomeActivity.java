@@ -1,4 +1,4 @@
-package seven.team.com.meuhospital;
+package seven.team.com.meuhospital.activity;
 
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +17,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import seven.team.com.meuhospital.PrefManager;
+import seven.team.com.meuhospital.R;
 
 public class WelcomeActivity extends AppCompatActivity {
 
