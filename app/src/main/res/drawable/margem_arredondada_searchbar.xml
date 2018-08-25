@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    
+    android:padding="10dp"
+    android:shape="rectangle">
+
+<!--#AAB1C2D3 | AA = alfa channel = transparencia = opacity -->
+<!--ALFA CHANNEL MATERIAL DESIGN - https://stackoverflow.com/questions/5445085/understanding-colors-on-android-six-characters/41121016#41121016-->
+
+    <solid android:color="#DEFFFFFF"
+        />
+    <corners
+        android:radius="6dp"/>
+
+</shape>

@@ -1,0 +1,34 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBarOverlay">false</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppCompat.TelaCheia" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <style name="ThemeOverlay.AppCompat.navTheme">
+
+        <!-- Color of text and icon when SELECTED -->
+        <item name="colorPrimary">#FE0458</item>
+
+        <!-- Background color when SELECTED -->
+        <item name="colorControlHighlight">#FE0458</item>
+
+    </style>
+
+</resources>
+
+<!--CORES EXTRAS-->
+
+    <!-- Amarelo:           #F6A41B   -->
+    <!-- Rosa Avermelhado: #FE0458   -->
+    <!-- Rosa Avermelhado: #FC4093   -->

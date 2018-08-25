@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/btnListByHospitais"
+        android:icon="@drawable/ic_coracao_12dp"
+        android:title="Seviços"
+        />
+
+   <item android:id="@+id/btnListByTag"
+        android:icon="@drawable/ic_hospital_12dp"
+        android:title="Todos"
+        />
+
+   <item android:id="@+id/btnListByCloser"
+        android:icon="@drawable/ic_mais_proximo_24dp"
+        android:title="Perto"
+        />
+
+</menu>
