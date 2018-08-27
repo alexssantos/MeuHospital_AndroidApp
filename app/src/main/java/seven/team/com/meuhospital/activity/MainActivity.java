@@ -1,10 +1,12 @@
 package seven.team.com.meuhospital.activity;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.internal.BottomNavigationItemView;
 import android.support.design.widget.FloatingActionButton;
@@ -30,6 +32,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import static android.Manifest.permission.CALL_PHONE;
 
 import java.util.ArrayList;
 
@@ -47,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private static final float INCLINACAO_ANGULO_PADRAO = 45f;
     private static final float ROTACAO_PADRAO = 0f;
     private static final LatLng LOCAL_PADRAO_RJ = new LatLng(-22.9088363,-43.1927289);
+    private static final int MY_PERMISSIONS_REQUEST_CALL_PHONE = 1;
 
 
     //variaveis
@@ -77,8 +81,34 @@ public class MainActivity extends AppCompatActivity {
         btnListAllHospitais.setOnClickListener(listHospitaisActivity);
         btnListByTags.setOnClickListener(listHospitaisActivity);
         btnListByCloser.setOnClickListener(listHospitaisActivity);
+        btnEmergenceCall.setOnClickListener(callPhone);
 
     }
+
+    public View.OnClickListener callPhone = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            Intent i = new Intent(Intent.ACTION_CALL);
+            i.setData(Uri.parse("tel:192"));
+
+
+            if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                    Manifest.permission.CALL_PHONE)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions((Activity) getApplicationContext(),
+                        new String[]{Manifest.permission.CALL_PHONE},
+                        MY_PERMISSIONS_REQUEST_CALL_PHONE);
+
+            } else {
+                try {
+                    startActivity(i);
+                } catch(SecurityException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
 
     private View.OnClickListener listHospitaisActivity = new View.OnClickListener() {
         @Override
@@ -274,6 +304,23 @@ public class MainActivity extends AppCompatActivity {
                 mPermissaoLocalPermitida = true;
                 //Permissoes OK - inicializar o mapa
                 inicializarMapa();
+                break;
+
+            case MY_PERMISSIONS_REQUEST_CALL_PHONE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the phone call
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
         }
     }
 
