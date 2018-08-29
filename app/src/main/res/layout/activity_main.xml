@@ -64,6 +64,44 @@
         app:layout_constraintRight_toRightOf="parent"
         app:menu="@menu/bottom_navigation" />
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="128dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/map"
+        android:elevation="10dp"
+        android:background="@drawable/margem_arredondada_searchbar" >
+
+        <ImageView
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:id="@+id/icBusca"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:src="@drawable/ic_busca"/>
+        
+        <EditText android:id="@+id/imputSearch"
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_toRightOf="@+id/icBusca"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:textSize="15sp"
+            android:textColor="#000"
+            android:background="@drawable/margem_arredondada_searchbar"
+            android:hint="Digite Nome do Hospital..."
+            android:imeOptions="actionSearch"
+            />
+
+    </RelativeLayout>
+
 
 
 

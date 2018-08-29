@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -15,7 +17,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -34,7 +40,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import static android.Manifest.permission.CALL_PHONE;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import seven.team.com.meuhospital.R;
 
@@ -42,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "TAG MainActivity";
 
+
+    //Constants
     private static final int ERROR_DIALOG_REQUEST = 1001;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1002;
     private static final String FINE_PERMISSION = Manifest.permission.ACCESS_FINE_LOCATION;
@@ -58,30 +68,78 @@ public class MainActivity extends AppCompatActivity {
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
 
+    //widgets
     BottomNavigationItemView btnListAllHospitais, btnListByTags, btnListByCloser;
     FloatingActionButton btnEmergenceCall;
+    EditText mSearchText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (servicoMapOK()) {
-            pegarPermissaoDeLocalizacao();
-            //Permissao OK -> Inicializa MAPA
-            //Permissao NAO OK -> GET Permissao + Inicializar MAPA
-        }
-
-        //Buttons Find ID
+        //Find ID
         btnListAllHospitais = findViewById(R.id.btnListByHospitais);
         btnListByTags = findViewById(R.id.btnListByTag);
         btnListByCloser= findViewById(R.id.btnListByCloser);
         btnEmergenceCall = findViewById(R.id.btnEmergenceCall);
+        mSearchText = findViewById(R.id.imputSearch);
+
 
         btnListAllHospitais.setOnClickListener(listHospitaisActivity);
         btnListByTags.setOnClickListener(listHospitaisActivity);
         btnListByCloser.setOnClickListener(listHospitaisActivity);
         btnEmergenceCall.setOnClickListener(callPhone);
+
+        if (servicoMapOK()) {
+            pegarPermissaoDeLocalizacao();
+            //Permissao OK -> Inicializa MAPA
+            //Permissao NAO OK -> GET Permissao + Inicializar
+
+        }
+
+    }
+
+    private void init(){
+        Log.d(TAG, "init: initializing");
+
+        mSearchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH
+                        || actionId == EditorInfo.IME_ACTION_DONE
+                        || keyEvent.getAction() == keyEvent.ACTION_DOWN
+                        || keyEvent.getAction() == keyEvent.KEYCODE_ENTER){
+
+                    //executar o metodo searching
+                    geoLocate();
+                }
+                return false;
+            }
+        });
+    }
+
+    private void geoLocate() {
+        Log.d(TAG, "GeoLocate: geolocating");
+
+        String searchString = mSearchText.getText().toString();
+
+        Geocoder geocoder = new Geocoder(MainActivity.this);
+        List<Address> addressList = new ArrayList<>();
+        try {
+            addressList = geocoder.getFromLocationName(searchString, 1);
+        }
+        catch (IOException e){
+            Log.e(TAG, "GeoLocation: IOException");
+        }
+
+        if (addressList.size() > 0){
+            Address address = addressList.get(0);
+
+            Log.d(TAG, "geoLocatoin: Localização encontrada: " + address.toString());
+
+            moverCamera(new LatLng(address.getLatitude(), address.getLongitude()), ZOOM_PADRAO, INCLINACAO_ANGULO_PADRAO, address.getAddressLine(0));
+        }
 
     }
 
@@ -158,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.d(TAG, "onComplete: localização encontrada");
 
                             Location localizacaoAtual = (Location) task.getResult();
-                            moverCamera(new LatLng(localizacaoAtual.getLatitude(), localizacaoAtual.getLongitude()), ZOOM_PADRAO, INCLINACAO_ANGULO_PADRAO);
+                            moverCamera(new LatLng(localizacaoAtual.getLatitude(), localizacaoAtual.getLongitude()), ZOOM_PADRAO,INCLINACAO_ANGULO_PADRAO, "My Location");
 
                         } else {
                             Log.d(TAG, "onComplete: localização atual está Null");
@@ -168,24 +226,30 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
-
-        } catch (SecurityException e) {
+        }
+        catch (SecurityException e) {
             Log.d(TAG, "pegarLocalizacaoUsuario: SecurityException: " + e.getMessage());
         }
     }
 
-/*
-        moves halfway along an arc between straight
-        OVERHEAD (0 degrees) and the
-        GROUND (90 degrees), to position
-*/
-    private void moverCamera(LatLng latLng, float zoom, float inclinacao) {
+
+    //        moves halfway along an arc between straight
+//        OVERHEAD (0 degrees) and the
+//        GROUND (90 degrees), to position
+
+    private void moverCamera(LatLng latLng, float zoom, float inclinacao, String title) {
         Log.d(TAG, "moverCamera: movendo a camera para: Lat: " + latLng.latitude + ", Long: " + latLng.longitude);
 
         //      Position( LatLong latLong, zoom, rotação, inclinação)
         mMap.moveCamera(CameraUpdateFactory.newCameraPosition( new CameraPosition(latLng ,zoom, inclinacao, ROTACAO_PADRAO)));
 
         Marcadores();
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(latLng)
+                .title(title);
+        mMap.addMarker(markerOptions);
+
+
     }
 
     private void MarcadoresNaUnha (){
@@ -209,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
         Marker m3 = mMap.addMarker(
                 new MarkerOptions()
                 .position(new LatLng(-22.9146178,-43.2002586))
-                .title("Hospital Central da Policia Militar"));
+                .title("HospitalModel Central da Policia Militar"));
 
     }
 
@@ -232,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    protected Marker createMarker(double latitude, double longitude, String title, String snippet, int iconResID) {
+    //    protected Marker createMarker(double latitude, double longitude, String title, String snippet, int iconResID) {
 //
 //        return mMap.addMarker(new MarkerOptions()
 //                .position(new LatLng(latitude, longitude))
@@ -241,7 +305,6 @@ public class MainActivity extends AppCompatActivity {
 //                .snippet(snippet)
 //                .icon(BitmapDescriptorFactory.fromResource(iconResID)));
 //    }
-
 
     //Verficação da conexaxao do Google Services
     public boolean servicoMapOK() {
@@ -359,6 +422,8 @@ public class MainActivity extends AppCompatActivity {
                 mMap.getUiSettings().setCompassEnabled(false);
 
                 MarcadoresNaUnha();
+
+                init();
 
             }
         });

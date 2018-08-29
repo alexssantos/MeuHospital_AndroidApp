@@ -13,12 +13,12 @@ import java.util.List;
 
 import seven.team.com.meuhospital.R;
 import seven.team.com.meuhospital.adapter.HospitaisListAdapter;
-import seven.team.com.meuhospital.model.Hospital;
+import seven.team.com.meuhospital.model.HospitalModel;
 
 public class HospitalsListActivity extends AppCompatActivity {
 
     private RecyclerView recListHospitais;
-    private List<Hospital> hospitalList = new ArrayList<>();
+    private List<HospitalModel> hospitalModelList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +31,7 @@ public class HospitalsListActivity extends AppCompatActivity {
         this.criarHospitaisMocados();
 
         //config Adapter
-        HospitaisListAdapter adapter = new HospitaisListAdapter(hospitalList);
+        HospitaisListAdapter adapter = new HospitaisListAdapter(hospitalModelList);
 
         //Config RecyclerView
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
@@ -45,8 +45,8 @@ public class HospitalsListActivity extends AppCompatActivity {
     public void criarHospitaisMocados(){
 
         for (int i= 0; i<=20; i++){
-            Hospital hospital= new Hospital( i , "Hospital" + i, "Hospital", 0.75*i+1);
-            hospitalList.add(hospital);
+            HospitalModel hospitalModel = new HospitalModel( i , "HospitalModel" + i, "HospitalModel", 0.75*i+1);
+            hospitalModelList.add(hospitalModel);
         }
 
     }

@@ -7,11 +7,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import seven.team.com.meuhospital.R;
-import seven.team.com.meuhospital.model.Hospital;
+import seven.team.com.meuhospital.model.HospitalModel;
 
 
 /*
@@ -26,9 +25,9 @@ import seven.team.com.meuhospital.model.Hospital;
 
 public class HospitaisListAdapter extends RecyclerView.Adapter<HospitaisListAdapter.HospitaisListViewHolder> {
 
-    private List<Hospital> hosptalList;
+    private List<HospitalModel> hosptalList;
 
-    public HospitaisListAdapter(List<Hospital> hosptalList) {
+    public HospitaisListAdapter(List<HospitalModel> hosptalList) {
         this.hosptalList = hosptalList;
     }
 
@@ -46,11 +45,11 @@ public class HospitaisListAdapter extends RecyclerView.Adapter<HospitaisListAdap
     @Override
     public void onBindViewHolder(@NonNull HospitaisListViewHolder holder, int position) {
 
-        Hospital hospital = hosptalList.get(position);
-        holder.idHospital.setText(String.valueOf(hospital.getIdHospital()));
-        holder.nome.setText(hospital.getNome());
-        holder.tipo.setText(hospital.getTipo());
-        String distancia = String.valueOf(hospital.getDistancia()) + " Km";
+        HospitalModel hospitalModel = hosptalList.get(position);
+        holder.idHospital.setText(String.valueOf(hospitalModel.getIdHospital()));
+        holder.nome.setText(hospitalModel.getNome());
+        holder.tipo.setText(hospitalModel.getTipo());
+        String distancia = String.valueOf(hospitalModel.getDistancia()) + " Km";
         holder.distancia.setText(distancia);
     }
 

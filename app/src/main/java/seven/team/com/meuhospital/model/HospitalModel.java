@@ -1,20 +1,20 @@
 package seven.team.com.meuhospital.model;
 
-public class Hospital {
+public class HospitalModel {
 
     private int IdHospital;
     private String Nome;
     private String Tipo;
     private double Distancia;
 
-    public Hospital(int idHospital, String nome, String tipo, double distancia) {
+    public HospitalModel(int idHospital, String nome, String tipo, double distancia) {
         IdHospital = idHospital;
         Nome = nome;
         Tipo = tipo;
         Distancia = distancia;
     }
 
-    public Hospital() {
+    public HospitalModel() {
     }
 
 
