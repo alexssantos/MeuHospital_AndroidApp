@@ -7,9 +7,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import seven.team.com.meuhospital.R;
+import seven.team.com.meuhospital.activity.HospitalsListActivity;
+import seven.team.com.meuhospital.activity.MainActivity;
 import seven.team.com.meuhospital.model.HospitalModel;
 
 
@@ -26,11 +30,16 @@ import seven.team.com.meuhospital.model.HospitalModel;
 public class HospitaisListAdapter extends RecyclerView.Adapter<HospitaisListAdapter.HospitaisListViewHolder> {
 
     private List<HospitalModel> hosptalList;
+    private List<HospitalModel> hospitalListSearch;
 
     public HospitaisListAdapter(List<HospitalModel> hosptalList) {
         this.hosptalList = hosptalList;
+        this.hospitalListSearch = new ArrayList<>();
+        this.hospitalListSearch = HospitalsListActivity.hospitalModelList;
     }
 
+
+    /////////////////////  Implemented Methods  /////////////////////////////////
     @NonNull
     @Override
     public HospitaisListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -58,6 +67,9 @@ public class HospitaisListAdapter extends RecyclerView.Adapter<HospitaisListAdap
         return hosptalList.size();
     }
 
+
+    ////////////////////// Other //////////////////////////
+
     public class HospitaisListViewHolder extends RecyclerView.ViewHolder{
 
         TextView idHospital;
@@ -74,5 +86,22 @@ public class HospitaisListAdapter extends RecyclerView.Adapter<HospitaisListAdap
             tipo = itemView.findViewById(R.id.textType);
 
         }
+    }
+
+    // Filter Class
+    public void filter(String typed) {
+        typed = typed.toLowerCase(Locale.getDefault());
+        HospitalsListActivity.hospitalModelList.clear();
+
+        if (typed.length() == 0) {
+            HospitalsListActivity.hospitalModelList.addAll(hospitalListSearch);
+        } else {
+            for (HospitalModel wp : hospitalListSearch) {
+                if (wp.getNome().toLowerCase(Locale.getDefault()).contains(typed)) {
+                    HospitalsListActivity.hospitalModelList.add(wp);
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 }
