@@ -1,6 +1,7 @@
 package seven.team.com.meuhospital.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
@@ -16,10 +17,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,7 +42,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import static android.Manifest.permission.CALL_PHONE;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,8 +51,8 @@ import seven.team.com.meuhospital.R;
 
 public class MainActivity extends AppCompatActivity {
 
+    //TAG_Activity
     private static final String TAG = "TAG MainActivity";
-
 
     //Constants
     private static final int ERROR_DIALOG_REQUEST = 1001;
@@ -63,15 +66,16 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_CALL_PHONE = 1;
 
 
-    //variaveis
+    //Var
     private boolean mPermissaoLocalPermitida = false;
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
 
-    //widgets
-    BottomNavigationItemView btnListAllHospitais, btnListByTags, btnListByCloser;
-    FloatingActionButton btnEmergenceCall;
-    EditText mSearchText;
+    //Widgets
+    private BottomNavigationItemView btnListAllHospitais, btnListByTags, btnListByCloser;
+    private FloatingActionButton btnEmergenceCall;
+    private EditText mSearchText;
+    private AutoCompleteTextView autoComplete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,16 +84,20 @@ public class MainActivity extends AppCompatActivity {
 
         //Find ID
         btnListAllHospitais = findViewById(R.id.btnListByHospitais);
-        btnListByTags = findViewById(R.id.btnListByTag);
-        btnListByCloser= findViewById(R.id.btnListByCloser);
-        btnEmergenceCall = findViewById(R.id.btnEmergenceCall);
-        mSearchText = findViewById(R.id.imputSearch);
+        btnListByTags =     findViewById(R.id.btnListByTag);
+        btnListByCloser=    findViewById(R.id.btnListByCloser);
+        btnEmergenceCall =  findViewById(R.id.btnEmergenceCall);
+        mSearchText =       findViewById(R.id.imputSearch);
 
 
+
+        //Buttons
         btnListAllHospitais.setOnClickListener(listHospitaisActivity);
         btnListByTags.setOnClickListener(listHospitaisActivity);
         btnListByCloser.setOnClickListener(listHospitaisActivity);
         btnEmergenceCall.setOnClickListener(callPhone);
+
+        SearchHomeConfig();
 
         if (servicoMapOK()) {
             pegarPermissaoDeLocalizacao();
@@ -99,6 +107,53 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    public View.OnClickListener callPhone = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            Intent i = new Intent(Intent.ACTION_CALL);
+            i.setData(Uri.parse("tel:192"));
+
+
+            if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions((Activity) getApplicationContext(),
+                                                    new String[]{Manifest.permission.CALL_PHONE},
+                                                    MY_PERMISSIONS_REQUEST_CALL_PHONE);
+
+            } else {
+                try {
+                    startActivity(i);
+                } catch(SecurityException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
+
+    private View.OnClickListener listHospitaisActivity = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case (R.id.btnListByHospitais):
+                    //TODO: Logica de pegar a busca desse metodo e add na Intent
+                    Intent intentListByHospitais = new Intent(getApplicationContext(), HospitalsListActivity.class);
+                    startActivity(intentListByHospitais);
+                    break;
+                case (R.id.btnListByTag):
+                    //TODO: Logica de pegar a busca desse metodo e add na Intent
+                    Intent intentListByTag = new Intent(getApplicationContext(), HospitalsListActivity.class);
+                    startActivity(intentListByTag);
+                    break;
+                case (R.id.btnListByCloser):
+                    //TODO: Logica de pegar a busca desse metodo e add na Intent
+                    Intent intentListByCloser = new Intent(getApplicationContext(), HospitalsListActivity.class);
+                    startActivity(intentListByCloser);
+                    break;
+            }
+        }
+    };
 
     private void init(){
         Log.d(TAG, "init: initializing");
@@ -117,6 +172,27 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    @SuppressLint({"RestrictedApi", "WrongViewCast"})
+    private void SearchHomeConfig(){
+        /*searchAutoComplete.setDropDownBackgroundResource(R.drawable.margem_arredondada_searchbar);
+        searchAutoComplete.setDropDownAnchor(R.id.searchView_home);
+        searchAutoComplete.setThreshold(0);
+
+        searchAutoComplete.setAdapter(adapter);
+        searchAutoComplete.setThreshold(0);
+        searchAutoComplete.setCursorVisible();*/
+
+        String[] queryAutoCompeleteList = getResources().getStringArray(R.array.query_suggestions_test);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
+                android.R.layout.simple_list_item_1,
+                queryAutoCompeleteList);
+
+        autoComplete = (AutoCompleteTextView) findViewById(R.id.imputSearch);
+        autoComplete.setAdapter(adapter);
+
+
     }
 
     private void geoLocate() {
@@ -142,62 +218,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
-    public View.OnClickListener callPhone = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            Intent i = new Intent(Intent.ACTION_CALL);
-            i.setData(Uri.parse("tel:192"));
-
-
-            if (ContextCompat.checkSelfPermission(getApplicationContext(),
-                    Manifest.permission.CALL_PHONE)
-                    != PackageManager.PERMISSION_GRANTED) {
-
-                ActivityCompat.requestPermissions((Activity) getApplicationContext(),
-                        new String[]{Manifest.permission.CALL_PHONE},
-                        MY_PERMISSIONS_REQUEST_CALL_PHONE);
-
-            } else {
-                try {
-                    startActivity(i);
-                } catch(SecurityException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    };
-
-    private View.OnClickListener listHospitaisActivity = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()){
-                case (R.id.btnListByHospitais):
-                    //TODO: Logica de pegar a busca desse metodo e add na Intent
-
-
-                    Intent intent1 = new Intent(getApplicationContext(), HospitalsListActivity.class);
-                    startActivity(intent1);
-                    break;
-                case (R.id.btnListByTag):
-                    //TODO: Logica de pegar a busca desse metodo e add na Intent
-
-
-
-                    Intent intent2 = new Intent(getApplicationContext(), HospitalsListActivity.class);
-                    startActivity(intent2);
-                    break;
-                case (R.id.btnListByCloser):
-                    //TODO: Logica de pegar a busca desse metodo e add na Intent
-
-
-
-                    Intent intent3 = new Intent(getApplicationContext(), HospitalsListActivity.class);
-                    startActivity(intent3);
-                    break;
-            }
-        }
-    };
 
     private void pegarLocalizacaoUsuario() {
         Log.d(TAG, "pegarLocalizacaoUsuario: pegando a atual localização do usuario");
@@ -232,11 +252,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    //        moves halfway along an arc between straight
-//        OVERHEAD (0 degrees) and the
-//        GROUND (90 degrees), to position
-
+    //region Camera Config Parameters
+    /*  Moves halfway along an arc between straight
+        OVERHEAD (0 degrees) and the
+        GROUND (90 degrees), to position
+    endregion */
+    //endregion
     private void moverCamera(LatLng latLng, float zoom, float inclinacao, String title) {
         Log.d(TAG, "moverCamera: movendo a camera para: Lat: " + latLng.latitude + ", Long: " + latLng.longitude);
 
@@ -295,16 +316,6 @@ public class MainActivity extends AppCompatActivity {
             mMap.addMarker(options);
         }
     }
-
-    //    protected Marker createMarker(double latitude, double longitude, String title, String snippet, int iconResID) {
-//
-//        return mMap.addMarker(new MarkerOptions()
-//                .position(new LatLng(latitude, longitude))
-//                .anchor(0.5f, 0.5f)
-//                .title(title)
-//                .snippet(snippet)
-//                .icon(BitmapDescriptorFactory.fromResource(iconResID)));
-//    }
 
     //Verficação da conexaxao do Google Services
     public boolean servicoMapOK() {

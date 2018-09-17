@@ -16,20 +16,6 @@
         android:layout_height="match_parent"
         tools:context=".activity.MainActivity"/>
 
-    <SearchView
-        android:id="@+id/search_home"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="60dp"
-        android:background="@drawable/margem_arredondada_searchbar"
-        android:labelFor="@+id/search_main"
-        android:queryHint="Hospital Salgado Filho..."
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/btnEmergenceCall"
         android:layout_width="wrap_content"
@@ -69,36 +55,38 @@
         android:layout_height="50dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="128dp"
+        android:layout_marginTop="38dp"
+        android:background="@drawable/margem_arredondada_searchbar"
+        android:elevation="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/map"
-        android:elevation="10dp"
-        android:background="@drawable/margem_arredondada_searchbar" >
+        app:layout_constraintTop_toTopOf="@+id/map">
 
         <ImageView
-            android:layout_width="15dp"
-            android:layout_height="15dp"
             android:id="@+id/icBusca"
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:src="@drawable/ic_busca"/>
-        
-        <EditText android:id="@+id/imputSearch"
+            android:layout_marginStart="17dp"
+            android:gravity="center"
+            android:src="@drawable/ic_busca" />
 
+        <AutoCompleteTextView
+            android:id="@+id/imputSearch"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_toRightOf="@+id/icBusca"
             android:layout_centerVertical="true"
             android:layout_marginLeft="10dp"
-            android:textSize="15sp"
-            android:textColor="#000"
+            android:layout_toRightOf="@+id/icBusca"
             android:background="@drawable/margem_arredondada_searchbar"
-            android:hint="Digite Nome do Hospital..."
+            android:hint="Hospital..."
             android:imeOptions="actionSearch"
-            />
+            android:paddingLeft="15dp"
+            android:textAlignment="textStart"
+            android:textColor="#000"
+            android:textSize="15sp" />
 
     </RelativeLayout>
 
