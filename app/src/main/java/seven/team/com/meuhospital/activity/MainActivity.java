@@ -1,7 +1,6 @@
 package seven.team.com.meuhospital.activity;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
@@ -17,27 +16,28 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.GeoDataClient;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -48,8 +48,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import seven.team.com.meuhospital.R;
+import seven.team.com.meuhospital.adapter.PlaceAutocompleteAdapter;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+                            implements OnMapReadyCallback,
+                                        GoogleApiClient.OnConnectionFailedListener{
+
+    //  INTERFACE METHODS
 
     //TAG_Activity
     private static final String TAG = "TAG MainActivity";
@@ -64,18 +69,25 @@ public class MainActivity extends AppCompatActivity {
     private static final float ROTACAO_PADRAO = 0f;
     private static final LatLng LOCAL_PADRAO_RJ = new LatLng(-22.9088363,-43.1927289);
     private static final int MY_PERMISSIONS_REQUEST_CALL_PHONE = 1;
+    private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(
+            new LatLng(-42,157), new LatLng(-40,120));
+
 
 
     //Var
     private boolean mPermissaoLocalPermitida = false;
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
+    private PlaceAutocompleteAdapter mAutocompleteAdapter;
+    private AutoCompleteTextView autoCompleteText;
+    private GeoDataClient mGeoDataClient;
 
     //Widgets
     private BottomNavigationItemView btnListAllHospitais, btnListByTags, btnListByCloser;
     private FloatingActionButton btnEmergenceCall;
-    private EditText mSearchText;
-    private AutoCompleteTextView autoComplete;
+    private AutoCompleteTextView mAutocompleteText;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         btnListByTags =     findViewById(R.id.btnListByTag);
         btnListByCloser=    findViewById(R.id.btnListByCloser);
         btnEmergenceCall =  findViewById(R.id.btnEmergenceCall);
-        mSearchText =       findViewById(R.id.imputSearch);
+        mAutocompleteText =       findViewById(R.id.imputSearch);
 
 
 
@@ -97,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
         btnListByCloser.setOnClickListener(listHospitaisActivity);
         btnEmergenceCall.setOnClickListener(callPhone);
 
-        SearchHomeConfig();
 
         if (servicoMapOK()) {
             pegarPermissaoDeLocalizacao();
@@ -158,7 +169,14 @@ public class MainActivity extends AppCompatActivity {
     private void init(){
         Log.d(TAG, "init: initializing");
 
-        mSearchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        // Construct a GeoDataClient for the Google Places API for Android.
+        mGeoDataClient = Places.getGeoDataClient(this, null);
+        // AutoComplete
+        mAutocompleteAdapter = new PlaceAutocompleteAdapter(this, mGeoDataClient, LAT_LNG_BOUNDS, null );
+        // Set Adapter
+        mAutocompleteText.setAdapter(mAutocompleteAdapter);
+
+        mAutocompleteText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH
@@ -172,25 +190,10 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-    }
 
-    @SuppressLint({"RestrictedApi", "WrongViewCast"})
-    private void SearchHomeConfig(){
-        /*searchAutoComplete.setDropDownBackgroundResource(R.drawable.margem_arredondada_searchbar);
-        searchAutoComplete.setDropDownAnchor(R.id.searchView_home);
-        searchAutoComplete.setThreshold(0);
+        // GET DEVICE LOCATON
+        //Todo Here:
 
-        searchAutoComplete.setAdapter(adapter);
-        searchAutoComplete.setThreshold(0);
-        searchAutoComplete.setCursorVisible();*/
-
-        String[] queryAutoCompeleteList = getResources().getStringArray(R.array.query_suggestions_test);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
-                android.R.layout.simple_list_item_1,
-                queryAutoCompeleteList);
-
-        autoComplete = (AutoCompleteTextView) findViewById(R.id.imputSearch);
-        autoComplete.setAdapter(adapter);
 
 
     }
@@ -198,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
     private void geoLocate() {
         Log.d(TAG, "GeoLocate: geolocating");
 
-        String searchString = mSearchText.getText().toString();
+        String searchString = mAutocompleteText.getText().toString();
 
         Geocoder geocoder = new Geocoder(MainActivity.this);
         List<Address> addressList = new ArrayList<>();
@@ -441,4 +444,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+
+    }
 }
