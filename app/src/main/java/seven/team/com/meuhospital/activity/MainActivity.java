@@ -1,7 +1,6 @@
 package seven.team.com.meuhospital.activity;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
@@ -17,29 +16,39 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.AutocompletePrediction;
+import com.google.android.gms.location.places.GeoDataClient;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.PlaceBufferResponse;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.RuntimeRemoteException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
@@ -48,8 +57,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import seven.team.com.meuhospital.R;
+import seven.team.com.meuhospital.adapter.PlaceAutocompleteAdapter;
+import seven.team.com.meuhospital.model.PlaceInfo;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+                            implements OnMapReadyCallback,
+                                        GoogleApiClient.OnConnectionFailedListener{
+
+    //  INTERFACE METHODS
 
     //TAG_Activity
     private static final String TAG = "TAG MainActivity";
@@ -64,18 +79,27 @@ public class MainActivity extends AppCompatActivity {
     private static final float ROTACAO_PADRAO = 0f;
     private static final LatLng LOCAL_PADRAO_RJ = new LatLng(-22.9088363,-43.1927289);
     private static final int MY_PERMISSIONS_REQUEST_CALL_PHONE = 1;
+    private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(
+            new LatLng(-42,157), new LatLng(-40,120));
+
 
 
     //Var
     private boolean mPermissaoLocalPermitida = false;
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
+    private PlaceAutocompleteAdapter mAutocompleteAdapter;
+    private AutoCompleteTextView autoCompleteText;
+    private GeoDataClient mGeoDataClient;
+    private PlaceInfo mPlaceInfo;
+    private GoogleApiClient mGoogleApiClient;
 
     //Widgets
     private BottomNavigationItemView btnListAllHospitais, btnListByTags, btnListByCloser;
     private FloatingActionButton btnEmergenceCall;
-    private EditText mSearchText;
-    private AutoCompleteTextView autoComplete;
+    private AutoCompleteTextView mSearchText;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
         btnListByCloser.setOnClickListener(listHospitaisActivity);
         btnEmergenceCall.setOnClickListener(callPhone);
 
-        SearchHomeConfig();
 
         if (servicoMapOK()) {
             pegarPermissaoDeLocalizacao();
@@ -158,6 +181,20 @@ public class MainActivity extends AppCompatActivity {
     private void init(){
         Log.d(TAG, "init: initializing");
 
+        // Construct a GeoDataClient for the Google Places API for Android.
+        mGeoDataClient = Places.getGeoDataClient(this, null);
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .enableAutoManage(this, this)
+                .build();
+        mSearchText.setOnItemClickListener(mAutocompleteClickListener);
+
+        // AutoComplete
+        mAutocompleteAdapter = new PlaceAutocompleteAdapter(this, mGeoDataClient, LAT_LNG_BOUNDS, null );
+        // Set Adapter
+        mSearchText.setAdapter(mAutocompleteAdapter);
+
         mSearchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
@@ -172,27 +209,77 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        //Esconder Teclado.
+        hideSoftKeyboard();
+
+        // GET DEVICE LOCATON
+        //Todo Here:
     }
 
-    @SuppressLint({"RestrictedApi", "WrongViewCast"})
-    private void SearchHomeConfig(){
-        /*searchAutoComplete.setDropDownBackgroundResource(R.drawable.margem_arredondada_searchbar);
-        searchAutoComplete.setDropDownAnchor(R.id.searchView_home);
-        searchAutoComplete.setThreshold(0);
+    private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            hideSoftKeyboard();
 
-        searchAutoComplete.setAdapter(adapter);
-        searchAutoComplete.setThreshold(0);
-        searchAutoComplete.setCursorVisible();*/
+            //get Place ID
+            final AutocompletePrediction item = mAutocompleteAdapter.getItem(position);
+            final String placedId = item.getPlaceId();
 
-        String[] queryAutoCompeleteList = getResources().getStringArray(R.array.query_suggestions_test);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
-                android.R.layout.simple_list_item_1,
-                queryAutoCompeleteList);
+            //Request
+            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placedId);
+            placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
 
-        autoComplete = (AutoCompleteTextView) findViewById(R.id.imputSearch);
-        autoComplete.setAdapter(adapter);
+            // message
+            Toast.makeText(getApplicationContext(), "Clicked: " + placedId,
+                    Toast.LENGTH_SHORT).show();
+            Log.i(TAG, "Called getPlaceById to get Place details for " + placedId);
+        }
+    };
+
+    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
+        @Override
+        public void onResult(@NonNull PlaceBuffer places) {
+            if (places.getStatus().isSuccess() && places.get(0).getName() != null){
+                Log.d(TAG, "mUpdatePlaceDetailsCallback: Place query did not complete successfully: " + places.get(0).getName().toString());
+                try {
+                    Place place = places.get(0);
+
+                    // Get the Place object from the buffer.
+                    mPlaceInfo  = new PlaceInfo();
+                    mPlaceInfo.setName(place.getName().toString());
+                    mPlaceInfo.setAddress(place.getAddress().toString());
+                    mPlaceInfo.setId(place.getId());
+                    mPlaceInfo.setPhoneNumber(place.getPhoneNumber().toString());
+                    mPlaceInfo.setLatlng(place.getLatLng());
 
 
+                    moverCamera(new LatLng(place.getViewport().getCenter().latitude, place.getViewport().getCenter().longitude),
+                            ZOOM_PADRAO,
+                            INCLINACAO_ANGULO_PADRAO,
+                            mPlaceInfo.getName());
+
+
+
+                    // Format details of the place for display and show it in a TextView.
+                    Log.i(TAG, "Place details received: " + mPlaceInfo.toString());
+
+                    places.release();
+                } catch (RuntimeRemoteException e) {
+                    Log.e(TAG, "mUpdatePlaceDetailsCallback: Place query did not complete.", e);
+                    return;
+                } catch (NullPointerException e) {
+                    Log.e(TAG, "mUpdatePlaceDetailsCallback: Place query NULL.", e);
+                    return;
+                }
+            }
+        }
+    };
+
+
+    private void hideSoftKeyboard() {
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        mSearchText.setText("");
     }
 
     private void geoLocate() {
@@ -270,7 +357,7 @@ public class MainActivity extends AppCompatActivity {
                 .title(title);
         mMap.addMarker(markerOptions);
 
-
+        hideSoftKeyboard();
     }
 
     private void MarcadoresNaUnha (){
@@ -441,4 +528,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+
+    }
 }
