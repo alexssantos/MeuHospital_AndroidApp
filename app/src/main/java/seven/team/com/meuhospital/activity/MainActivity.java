@@ -1,7 +1,6 @@
 package seven.team.com.meuhospital.activity;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -9,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.internal.BottomNavigationItemView;
 import android.support.design.widget.FloatingActionButton;
@@ -25,6 +23,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -67,38 +66,39 @@ public class MainActivity extends AppCompatActivity
 
     //  INTERFACE METHODS
 
-    //TAG_Activity
+    // TAG_Activity
     private static final String TAG = "TAG MainActivity";
 
-    //Constants
+    // Constants
     private static final int ERROR_DIALOG_REQUEST = 1001;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1002;
     private static final String FINE_PERMISSION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COARSE_PERMISSION = Manifest.permission.ACCESS_COARSE_LOCATION;
+    private static final int MY_PERMISSIONS_REQUEST_CALL_PHONE = 1;
+
     private static final float ZOOM_PADRAO = 15f;
     private static final float INCLINACAO_ANGULO_PADRAO = 45f;
     private static final float ROTACAO_PADRAO = 0f;
     private static final LatLng LOCAL_PADRAO_RJ = new LatLng(-22.9088363,-43.1927289);
-    private static final int MY_PERMISSIONS_REQUEST_CALL_PHONE = 1;
     private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(
-            new LatLng(-42,157), new LatLng(-40,120));
+                                                            new LatLng(-42,157),
+                                                            new LatLng(-40,120));
 
-
-
-    //Var
+    // Var
     private boolean mPermissaoLocalPermitida = false;
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private PlaceAutocompleteAdapter mAutocompleteAdapter;
-    private AutoCompleteTextView autoCompleteText;
     private GeoDataClient mGeoDataClient;
-    private PlaceInfo mPlaceInfo;
     private GoogleApiClient mGoogleApiClient;
+    private PlaceInfo mPlaceInfo;
+    private Marker mMarker;
 
-    //Widgets
+    // Widgets
     private BottomNavigationItemView btnListAllHospitais, btnListByTags, btnListByCloser;
     private FloatingActionButton btnEmergenceCall;
     private AutoCompleteTextView mSearchText;
+    private ImageView mGps, mInfo;
 
 
 
@@ -113,71 +113,24 @@ public class MainActivity extends AppCompatActivity
         btnListByCloser=    findViewById(R.id.btnListByCloser);
         btnEmergenceCall =  findViewById(R.id.btnEmergenceCall);
         mSearchText =       findViewById(R.id.imputSearch);
-
-
+        mGps =              findViewById(R.id.ic_gps);
+        mInfo =             findViewById(R.id.place_info);
 
         //Buttons
-        btnListAllHospitais.setOnClickListener(listHospitaisActivity);
-        btnListByTags.setOnClickListener(listHospitaisActivity);
-        btnListByCloser.setOnClickListener(listHospitaisActivity);
-        btnEmergenceCall.setOnClickListener(callPhone);
-
+        btnListAllHospitais .setOnClickListener(listHospitaisActivity);
+        btnListByTags       .setOnClickListener(listHospitaisActivity);
+        btnListByCloser     .setOnClickListener(listHospitaisActivity);
+        btnEmergenceCall    .setOnClickListener(callPhone);
 
         if (servicoMapOK()) {
             pegarPermissaoDeLocalizacao();
             //Permissao OK -> Inicializa MAPA
-            //Permissao NAO OK -> GET Permissao + Inicializar
-
+            //Permissao NAO OK -> GET Permissao -> Inicializar
         }
 
     }
 
-    public View.OnClickListener callPhone = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            Intent i = new Intent(Intent.ACTION_CALL);
-            i.setData(Uri.parse("tel:192"));
 
-
-            if (ContextCompat.checkSelfPermission(getApplicationContext(),
-                            Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-
-                ActivityCompat.requestPermissions((Activity) getApplicationContext(),
-                                                    new String[]{Manifest.permission.CALL_PHONE},
-                                                    MY_PERMISSIONS_REQUEST_CALL_PHONE);
-
-            } else {
-                try {
-                    startActivity(i);
-                } catch(SecurityException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    };
-
-    private View.OnClickListener listHospitaisActivity = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()){
-                case (R.id.btnListByHospitais):
-                    //TODO: Logica de pegar a busca desse metodo e add na Intent
-                    Intent intentListByHospitais = new Intent(getApplicationContext(), HospitalsListActivity.class);
-                    startActivity(intentListByHospitais);
-                    break;
-                case (R.id.btnListByTag):
-                    //TODO: Logica de pegar a busca desse metodo e add na Intent
-                    Intent intentListByTag = new Intent(getApplicationContext(), HospitalsListActivity.class);
-                    startActivity(intentListByTag);
-                    break;
-                case (R.id.btnListByCloser):
-                    //TODO: Logica de pegar a busca desse metodo e add na Intent
-                    Intent intentListByCloser = new Intent(getApplicationContext(), HospitalsListActivity.class);
-                    startActivity(intentListByCloser);
-                    break;
-            }
-        }
-    };
 
     private void init(){
         Log.d(TAG, "init: initializing");
@@ -189,8 +142,8 @@ public class MainActivity extends AppCompatActivity
                 .addApi(Places.PLACE_DETECTION_API)
                 .enableAutoManage(this, this)
                 .build();
+        // Get selected Item on Autocomplete
         mSearchText.setOnItemClickListener(mAutocompleteClickListener);
-
         // AutoComplete
         mAutocompleteAdapter = new PlaceAutocompleteAdapter(this, mGeoDataClient, LAT_LNG_BOUNDS, null );
         // Set Adapter
@@ -211,83 +164,99 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        //Esconder Teclado.
         hideSoftKeyboard();
 
-        // GET DEVICE LOCATON
-        //Todo Here:
+        mGps.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "");
+                getUserLocation();
+            }
+        });
+
+        mInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mMarker != null){
+                    Log.d(TAG, "onCLick: place info " + mPlaceInfo.toString());
+                    try{
+                        if (mMarker.isInfoWindowShown()){
+                            mMarker.hideInfoWindow();
+                        }else {
+                            Log.d(TAG, "onclick: place info: " + mPlaceInfo.toString());
+                            mMarker.showInfoWindow();
+                        }
+                    }catch (NullPointerException e){
+                        Log.e(TAG, "onClick: NullPointerException: " + e.getMessage());
+                    }
+                }else {
+                    Toast.makeText(getApplicationContext(), "Nenhuma Unidade de Saúde Localizada.", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
-    private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
+    /*
+     * Todo -----------------------  Emergencial Call Button  ------------------------------------------
+     */
+
+    public View.OnClickListener callPhone = new View.OnClickListener() {
         @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            hideSoftKeyboard();
+        public void onClick(View view) {
 
-            //get Place ID
-            final AutocompletePrediction item = mAutocompleteAdapter.getItem(position);
-            final String placedId = item.getPlaceId();
+            /*Intent i = new Intent(Intent.ACTION_CALL);
+            i.setData(Uri.parse("tel:192"));
 
-            //Request
-            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placedId);
-            placeResult.setResultCallback(updatePlaceDetailsCallback);
 
-            // message
-            Toast.makeText(getApplicationContext(), "Clicked: " + placedId,
-                    Toast.LENGTH_SHORT).show();
-            Log.i(TAG, "Called getPlaceById to get Place details for " + placedId);
+            if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions((Activity) getApplicationContext(),
+                                                    new String[]{Manifest.permission.CALL_PHONE},
+                                                    MY_PERMISSIONS_REQUEST_CALL_PHONE);
+
+            } else {
+                try {
+                    startActivity(i);
+                } catch(SecurityException e) {
+                    e.printStackTrace();
+                }
+            }*/
         }
     };
 
-    private ResultCallback<PlaceBuffer> updatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
+    /*
+     * Todo -----------------------  Main BottomBar Buttons ------------------------------------------
+     */
+
+    private View.OnClickListener listHospitaisActivity = new View.OnClickListener() {
         @Override
-        public void onResult(@NonNull PlaceBuffer places) {
-            if (places.getStatus().isSuccess() && places.get(0).getName() != null){
-                Log.d(TAG, "updatePlaceDetailsCallback: Place query did not complete successfully: " + places.get(0).getName().toString());
-                try {
-                    Place place = places.get(0);
+        public void onClick(View v) {
+            switch (v.getId()){
+                case (R.id.btnListByHospitais):
+                    //TODO: Logica de pegar a busca desse metodo e add na Intent
+                    Intent intentListByHospitais = new Intent(getApplicationContext(), HospitalsListActivity.class);
+                    startActivity(intentListByHospitais);
+                    break;
 
-                    // Get the Place object from the buffer.
-                    mPlaceInfo  = new PlaceInfo();
-                    mPlaceInfo.setName(place.getName().toString());
-                    mPlaceInfo.setAddress(place.getAddress().toString());
-                    mPlaceInfo.setId(place.getId());
-                    mPlaceInfo.setPhoneNumber(place.getPhoneNumber().toString());
-                    mPlaceInfo.setLatlng(place.getLatLng());
+                case (R.id.btnListByTag):
+                    //TODO: Logica de pegar a busca desse metodo e add na Intent
+                    Intent intentListByTag = new Intent(getApplicationContext(), HospitalsListActivity.class);
+                    startActivity(intentListByTag);
+                    break;
 
-
-                    moverCamera(new LatLng(place.getViewport().getCenter().latitude, place.getViewport().getCenter().longitude),
-                            ZOOM_PADRAO,
-                            INCLINACAO_ANGULO_PADRAO,
-                            mPlaceInfo.getName());
-
-
-
-                    // Format details of the place for display and show it in a TextView.
-                    Log.i(TAG, "Place details received: " + mPlaceInfo.toString());
-
-                    places.release();
-                } catch (RuntimeRemoteException e) {
-                    Log.e(TAG, "updatePlaceDetailsCallback: Place query did not complete.", e);
-                    return;
-                } catch (NullPointerException e) {
-                    Log.e(TAG, "updatePlaceDetailsCallback: Place query NULL.", e);
-                    return;
-                }
+                case (R.id.btnListByCloser):
+                    //TODO: Logica de pegar a busca desse metodo e add na Intent
+                    Intent intentListByCloser = new Intent(getApplicationContext(), HospitalsListActivity.class);
+                    startActivity(intentListByCloser);
+                    break;
             }
         }
     };
 
-
-    private void hideSoftKeyboard() {
-        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-        mSearchText.setText("");
-        
-        View view = this.getCurrentFocus();
-        if (view != null) {
-            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
-    }
+    /*
+     * Todo -----------------------  Search Management  ------------------------------------------
+     */
 
     private void geoLocate() {
         Log.d(TAG, "GeoLocate: geolocating");
@@ -313,7 +282,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private void getuserLocation() {
+    private void getUserLocation() {
         Log.d(TAG, "pegarLocalizacaoUsuario: pegando a atual localização do usuario");
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -367,6 +336,36 @@ public class MainActivity extends AppCompatActivity
         hideSoftKeyboard();
     }
 
+    private void moverCamera(LatLng latLng, float zoom, float inclinacao, PlaceInfo placeInfo) {
+        Log.d(TAG, "moverCamera: movendo a camera para: Lat: " + latLng.latitude + ", Long: " + latLng.longitude);
+        mMap.moveCamera(CameraUpdateFactory.newCameraPosition( new CameraPosition(latLng ,zoom, inclinacao, ROTACAO_PADRAO)));
+
+        mMap.clear();
+
+        if (placeInfo != null){
+            try {
+                String snippet = "Local: " + placeInfo.getName() +
+                                 "\n ID: " + placeInfo.getId() +
+                                 "\n Endereço: " + placeInfo.getAddress() +
+                                 "\n LatLong: " + placeInfo.getLatlng() +
+                                 "\n Telefone: " + placeInfo.getPhoneNumber();
+
+                MarkerOptions options = new MarkerOptions()
+                        .position(latLng)
+                        .title(placeInfo.getName())
+                        .snippet(snippet);
+
+                mMarker = mMap.addMarker(options);
+
+            }catch (NullPointerException e){
+                Log.e(TAG, "moveCamera: NullPointerException: " + e.getMessage());
+            }
+        }else{
+            mMap.addMarker(new MarkerOptions().position(latLng));
+        }
+        hideSoftKeyboard();
+    }
+
     private void MarcadoresNaUnha (){
         Log.d(TAG, "MarcadorNaUnha: Adding markers");
 
@@ -411,7 +410,10 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    //Verficação da conexaxao do Google Services
+    /*
+     Todo -------------------------- Check Google Services Permission ----------------------------
+     */
+
     public boolean servicoMapOK() {
         Log.d(TAG, "requestServiceMapOK: checking google services version");
         int disponivel = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(MainActivity.this);
@@ -430,6 +432,10 @@ public class MainActivity extends AppCompatActivity
         }
         return false;
     }
+
+    /*
+    * Todo ------------------------- Check/Request Location Permition + Start Map  -----------------------
+    */
 
     private void pegarPermissaoDeLocalizacao() {
         Log.d(TAG, "pegarPermissaoDeLocalizacao: verificar permissoes de localização");
@@ -450,6 +456,46 @@ public class MainActivity extends AppCompatActivity
             //Pedir Permissoes
             ActivityCompat.requestPermissions(this, permissoes, LOCATION_PERMISSION_REQUEST_CODE);
         }
+    }
+
+    private void inicializarMapa() {
+        Log.d(TAG, "inicializarMap: inicializando mapa");
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+
+        //Configurar e inicializar o mapa
+        mapFragment.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                Toast.makeText(getApplicationContext(), "Location Permission Granted. \n   Mapa Pronto!", Toast.LENGTH_LONG).show();
+                Log.d(TAG, "onMapReady: mapa está pronto");
+                mMap = googleMap;
+
+                // Set Start Place --> Iniciar Mapa -->  Brazil, RJ - Centro (LOCAL_PADRAO_RJ)
+                mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(
+                        LOCAL_PADRAO_RJ,
+                        ZOOM_PADRAO,
+                        INCLINACAO_ANGULO_PADRAO,
+                        ROTACAO_PADRAO)));
+
+                //Marcar localização Atual Usuario
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+                mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                mMap.getUiSettings().setCompassEnabled(false);
+                mMap.getUiSettings().setMapToolbarEnabled(false);
+                mMap.setMyLocationEnabled(true);
+                //mMap.getUiSettings().setZoomControlsEnabled(true);
+                // mMap.getUiSettings().setRotateGesturesEnabled(true);
+
+                MarcadoresNaUnha();
+
+                init();
+            }
+        });
     }
 
     @Override
@@ -492,49 +538,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void inicializarMapa() {
-        Log.d(TAG, "inicializarMap: inicializando mapa");
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-
-        //Configurar e inicializar o mapa
-        mapFragment.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(GoogleMap googleMap) {
-                Toast.makeText(getApplicationContext(), "Permissao Garantida. \n   Mapa Pronto!", Toast.LENGTH_LONG).show();
-                Log.d(TAG, "onMapReady: mapa está pronto");
-                mMap = googleMap;
-
-                //Pegar Localização Atual do Usuario
-//                pegarLocalizacaoUsuario();
-
-                //Iniciar Mapa no RJ - Centro - Hosp. Souza Aguiar
-//                moverCamera(LatLong Local , float Zoom);
-                mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(
-                        LOCAL_PADRAO_RJ,
-                        ZOOM_PADRAO,
-                        INCLINACAO_ANGULO_PADRAO,
-                        ROTACAO_PADRAO)));
-
-                //Marcar localização Atual Usuario
-                if (ActivityCompat.checkSelfPermission(getApplicationContext(),
-                            Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                        && ActivityCompat.checkSelfPermission(getApplicationContext(),
-                            Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    return;
-                }
-                mMap.setMyLocationEnabled(true);
-                mMap.getUiSettings().setMyLocationButtonEnabled(false);
-                mMap.getUiSettings().setCompassEnabled(false);
-
-                MarcadoresNaUnha();
-
-                init();
-
-            }
-        });
-    }
-
-
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
@@ -544,4 +547,81 @@ public class MainActivity extends AppCompatActivity
     public void onMapReady(GoogleMap googleMap) {
 
     }
+
+    /*
+     * Todo -----------------------  Places API - Autocomplete  -----------------------------------
+     */
+
+    private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            hideSoftKeyboard();
+
+            //get Place ID from Autocomplete
+            final AutocompletePrediction item = mAutocompleteAdapter.getItem(position);
+            final String placedId = item.getPlaceId();
+
+            //Request
+            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placedId);
+            placeResult.setResultCallback(updatePlaceDetailsCallback);
+
+            // message
+            Toast.makeText(getApplicationContext(), "Clicked: " + placedId,
+                    Toast.LENGTH_SHORT).show();
+            Log.i(TAG, "Called getPlaceById to get Place details for " + placedId);
+        }
+    };
+
+    private ResultCallback<PlaceBuffer> updatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
+        @Override
+        public void onResult(@NonNull PlaceBuffer places) {
+            if (places.getStatus().isSuccess() && places.get(0).getName() != null){
+                Log.d(TAG, "updatePlaceDetailsCallback: Place query did not complete successfully: " + places.get(0).getName().toString());
+
+                Place place;
+                try {
+                    place = places.get(0);
+
+                    // Get the Place object from the buffer.
+                    mPlaceInfo  = new PlaceInfo();
+                    mPlaceInfo.setName(place.getName().toString());
+                    mPlaceInfo.setAddress(place.getAddress().toString());
+                    mPlaceInfo.setId(place.getId());
+                    mPlaceInfo.setPhoneNumber(place.getPhoneNumber().toString());
+                    mPlaceInfo.setLatlng(place.getLatLng());
+
+                    // Format details of the place for display and show it in a TextView.
+                    Log.i(TAG, "Place details received: " + mPlaceInfo);
+                } catch (RuntimeRemoteException e) {
+                    Log.e(TAG, "updatePlaceDetailsCallback: Place query did not complete.", e);
+                    return;
+                } catch (NullPointerException e) {
+                    Log.e(TAG, "updatePlaceDetailsCallback: Place query NULL.", e);
+                    return;
+                }
+
+                moverCamera(new LatLng(place.getViewport().getCenter().latitude, place.getViewport().getCenter().longitude),
+                        ZOOM_PADRAO,
+                        INCLINACAO_ANGULO_PADRAO,
+                        mPlaceInfo);
+            }
+            places.release();
+        }
+    };
+
+    /*
+     * Todo -----------------------  KeyBoard  ----------------------------------------------------
+     */
+
+    private void hideSoftKeyboard() {
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        mSearchText.setText("");
+
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
 }
