@@ -3,6 +3,7 @@ package seven.team.com.meuhospital.activity;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -21,6 +22,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
@@ -37,7 +39,6 @@ import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.GeoDataClient;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
-import com.google.android.gms.location.places.PlaceBufferResponse;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -228,7 +229,7 @@ public class MainActivity extends AppCompatActivity
 
             //Request
             PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placedId);
-            placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
+            placeResult.setResultCallback(updatePlaceDetailsCallback);
 
             // message
             Toast.makeText(getApplicationContext(), "Clicked: " + placedId,
@@ -237,11 +238,11 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
-    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
+    private ResultCallback<PlaceBuffer> updatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
         @Override
         public void onResult(@NonNull PlaceBuffer places) {
             if (places.getStatus().isSuccess() && places.get(0).getName() != null){
-                Log.d(TAG, "mUpdatePlaceDetailsCallback: Place query did not complete successfully: " + places.get(0).getName().toString());
+                Log.d(TAG, "updatePlaceDetailsCallback: Place query did not complete successfully: " + places.get(0).getName().toString());
                 try {
                     Place place = places.get(0);
 
@@ -266,10 +267,10 @@ public class MainActivity extends AppCompatActivity
 
                     places.release();
                 } catch (RuntimeRemoteException e) {
-                    Log.e(TAG, "mUpdatePlaceDetailsCallback: Place query did not complete.", e);
+                    Log.e(TAG, "updatePlaceDetailsCallback: Place query did not complete.", e);
                     return;
                 } catch (NullPointerException e) {
-                    Log.e(TAG, "mUpdatePlaceDetailsCallback: Place query NULL.", e);
+                    Log.e(TAG, "updatePlaceDetailsCallback: Place query NULL.", e);
                     return;
                 }
             }
@@ -280,6 +281,12 @@ public class MainActivity extends AppCompatActivity
     private void hideSoftKeyboard() {
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         mSearchText.setText("");
+        
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     private void geoLocate() {
@@ -306,7 +313,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private void pegarLocalizacaoUsuario() {
+    private void getuserLocation() {
         Log.d(TAG, "pegarLocalizacaoUsuario: pegando a atual localização do usuario");
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);

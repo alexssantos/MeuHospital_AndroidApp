@@ -82,6 +82,7 @@
             android:layout_toRightOf="@+id/icBusca"
             android:background="@drawable/margem_arredondada_searchbar"
             android:hint="Hospital..."
+            android:maxLines="1"
             android:imeOptions="actionSearch"
             android:paddingLeft="15dp"
             android:textAlignment="textStart"
