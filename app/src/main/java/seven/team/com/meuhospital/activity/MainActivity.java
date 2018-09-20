@@ -81,9 +81,9 @@ public class MainActivity extends AppCompatActivity
     private static final float INCLINACAO_ANGULO_PADRAO = 45f;
     private static final float ROTACAO_PADRAO = 0f;
     private static final LatLng LOCAL_PADRAO_RJ = new LatLng(-22.9088363,-43.1927289);
-    private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(
-                                                            new LatLng(-42,157),
-                                                            new LatLng(-40,120));
+    private static final LatLngBounds LAT_LNG_BOUNDS_RJ = new LatLngBounds(
+                                                            new LatLng(-23.363768637173088,-44.74316583501343),
+                                                            new LatLng(-21.321440786080416,-40.96386896001343));
 
     // Var
     private boolean mPermissaoLocalPermitida = false;
@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "init: initializing");
 
 
-        //region Todo  ---- Search with Autocomplete -------
+        //region Todo  ---- Search with Autocomplete ----------------------------------------
 
         // Construct a GeoDataClient for the Google Places API for Android.
         mGeoDataClient = Places.getGeoDataClient(this, null);
@@ -149,14 +149,16 @@ public class MainActivity extends AppCompatActivity
 
         // Get selected Item on Autocomplete
         mAutocompleteText.setOnItemClickListener(mAutocompleteClickListener);
+
+        AutocompleteFilter filter =
+                new AutocompleteFilter.Builder()
+                        .setTypeFilter(Place.TYPE_HOSPITAL)
+                        .build();
+
         // AutoComplete Adapter
-        mAutocompleteAdapter = new PlaceAutocompleteAdapter(this, mGeoDataClient, LAT_LNG_BOUNDS, null );
+        mAutocompleteAdapter = new PlaceAutocompleteAdapter(this, mGeoDataClient, LAT_LNG_BOUNDS_RJ, filter );
         // Set Adapter
         mAutocompleteText.setAdapter(mAutocompleteAdapter);
-
-        AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
-                .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
-                .build();
 
         mAutocompleteText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -285,10 +287,8 @@ public class MainActivity extends AppCompatActivity
 
         if (addressList.size() > 0){
             Address address = addressList.get(0);
-
-            Log.d(TAG, "geoLocatoin: Localização encontrada: " + address.toString());
-
             moverCamera(new LatLng(address.getLatitude(), address.getLongitude()), ZOOM_PADRAO, INCLINACAO_ANGULO_PADRAO, address.getAddressLine(0));
+            Log.d(TAG, "geoLocatoin: Localização encontrada: " + address.toString());
         }
 
     }
@@ -325,7 +325,6 @@ public class MainActivity extends AppCompatActivity
             Log.d(TAG, "pegarLocalizacaoUsuario: SecurityException: " + e.getMessage());
         }
     }
-
 
     private void moverCamera(LatLng latLng, float zoom, float inclinacao, String title) {
         //region **Camera Config Parameters
@@ -604,7 +603,7 @@ public class MainActivity extends AppCompatActivity
                     mPlaceInfo.setLatlng(place.getLatLng());
 
                     // Format details of the place for display and show it in a TextView.
-                    Log.i(TAG, "Place details received: " + mPlaceInfo);
+                    Log.i(TAG, "Place details received: " + mPlaceInfo + "PlaceTypes: " + place.getPlaceTypes().toString());
                 } catch (RuntimeRemoteException e) {
                     Log.e(TAG, "updatePlaceDetailsCallback: Place query did not complete.", e);
                     return;
