@@ -34,6 +34,7 @@ import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.GeoDataClient;
 import com.google.android.gms.location.places.Place;
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity
     // Widgets
     private BottomNavigationItemView btnListAllHospitais, btnListByTags, btnListByCloser;
     private FloatingActionButton btnEmergenceCall;
-    private AutoCompleteTextView mSearchText;
+    private AutoCompleteTextView mAutocompleteText;
     private ImageView mGps, mInfo;
 
 
@@ -112,7 +113,7 @@ public class MainActivity extends AppCompatActivity
         btnListByTags =     findViewById(R.id.btnListByTag);
         btnListByCloser=    findViewById(R.id.btnListByCloser);
         btnEmergenceCall =  findViewById(R.id.btnEmergenceCall);
-        mSearchText =       findViewById(R.id.imputSearch);
+        mAutocompleteText =       findViewById(R.id.imputSearch);
         mGps =              findViewById(R.id.ic_gps);
         mInfo =             findViewById(R.id.place_info);
 
@@ -135,6 +136,9 @@ public class MainActivity extends AppCompatActivity
     private void init(){
         Log.d(TAG, "init: initializing");
 
+
+        //region Todo  ---- Search with Autocomplete -------
+
         // Construct a GeoDataClient for the Google Places API for Android.
         mGeoDataClient = Places.getGeoDataClient(this, null);
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -142,14 +146,19 @@ public class MainActivity extends AppCompatActivity
                 .addApi(Places.PLACE_DETECTION_API)
                 .enableAutoManage(this, this)
                 .build();
+
         // Get selected Item on Autocomplete
-        mSearchText.setOnItemClickListener(mAutocompleteClickListener);
-        // AutoComplete
+        mAutocompleteText.setOnItemClickListener(mAutocompleteClickListener);
+        // AutoComplete Adapter
         mAutocompleteAdapter = new PlaceAutocompleteAdapter(this, mGeoDataClient, LAT_LNG_BOUNDS, null );
         // Set Adapter
-        mSearchText.setAdapter(mAutocompleteAdapter);
+        mAutocompleteText.setAdapter(mAutocompleteAdapter);
 
-        mSearchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
+                .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
+                .build();
+
+        mAutocompleteText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH
@@ -163,6 +172,8 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
         });
+
+        //endregion
 
         hideSoftKeyboard();
 
@@ -261,7 +272,7 @@ public class MainActivity extends AppCompatActivity
     private void geoLocate() {
         Log.d(TAG, "GeoLocate: geolocating");
 
-        String searchString = mSearchText.getText().toString();
+        String searchString = mAutocompleteText.getText().toString();
 
         Geocoder geocoder = new Geocoder(MainActivity.this);
         List<Address> addressList = new ArrayList<>();
@@ -315,13 +326,14 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    //region Camera Config Parameters
+
+    private void moverCamera(LatLng latLng, float zoom, float inclinacao, String title) {
+        //region **Camera Config Parameters
     /*  Moves halfway along an arc between straight
         OVERHEAD (0 degrees) and the
         GROUND (90 degrees), to position
     endregion */
-    //endregion
-    private void moverCamera(LatLng latLng, float zoom, float inclinacao, String title) {
+        //endregion
         Log.d(TAG, "moverCamera: movendo a camera para: Lat: " + latLng.latitude + ", Long: " + latLng.longitude);
 
         //      Position( LatLong latLong, zoom, rotação, inclinação)
@@ -338,8 +350,8 @@ public class MainActivity extends AppCompatActivity
 
     private void moverCamera(LatLng latLng, float zoom, float inclinacao, PlaceInfo placeInfo) {
         Log.d(TAG, "moverCamera: movendo a camera para: Lat: " + latLng.latitude + ", Long: " + latLng.longitude);
-        mMap.moveCamera(CameraUpdateFactory.newCameraPosition( new CameraPosition(latLng ,zoom, inclinacao, ROTACAO_PADRAO)));
 
+        mMap.moveCamera(CameraUpdateFactory.newCameraPosition( new CameraPosition(latLng ,zoom, inclinacao, ROTACAO_PADRAO)));
         mMap.clear();
 
         if (placeInfo != null){
@@ -552,6 +564,7 @@ public class MainActivity extends AppCompatActivity
      * Todo -----------------------  Places API - Autocomplete  -----------------------------------
      */
 
+
     private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -566,7 +579,7 @@ public class MainActivity extends AppCompatActivity
             placeResult.setResultCallback(updatePlaceDetailsCallback);
 
             // message
-            Toast.makeText(getApplicationContext(), "Clicked: " + placedId,
+            Toast.makeText(getApplicationContext(), "Place Id: " + placedId,
                     Toast.LENGTH_SHORT).show();
             Log.i(TAG, "Called getPlaceById to get Place details for " + placedId);
         }
@@ -615,7 +628,7 @@ public class MainActivity extends AppCompatActivity
 
     private void hideSoftKeyboard() {
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-        mSearchText.setText("");
+        mAutocompleteText.setText("");
 
         View view = this.getCurrentFocus();
         if (view != null) {
