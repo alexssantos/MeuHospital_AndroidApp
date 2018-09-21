@@ -1,6 +1,7 @@
 package seven.team.com.meuhospital.activity;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.internal.BottomNavigationItemView;
 import android.support.design.widget.FloatingActionButton;
@@ -94,6 +96,7 @@ public class MainActivity extends AppCompatActivity
     private GoogleApiClient mGoogleApiClient;
     private PlaceInfo mPlaceInfo;
     private Marker mMarker;
+    private Context mContext = this;
 
     // Widgets
     private BottomNavigationItemView btnListAllHospitais, btnListByTags, btnListByCloser;
@@ -131,8 +134,6 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-
-
     private void init(){
         Log.d(TAG, "init: initializing");
 
@@ -152,7 +153,11 @@ public class MainActivity extends AppCompatActivity
 
         AutocompleteFilter filter =
                 new AutocompleteFilter.Builder()
-                        .setTypeFilter(Place.TYPE_HOSPITAL)
+//                        .setTypeFilter(Place.TYPE_HOSPITAL)
+//                        .setTypeFilter(Place.TYPE_ESTABLISHMENT)
+//                        .setTypeFilter(Place.TYPE_DOCTOR)
+                        .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ESTABLISHMENT)
+                        .setCountry("BR")
                         .build();
 
         // AutoComplete Adapter
@@ -217,14 +222,14 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onClick(View view) {
 
-            /*Intent i = new Intent(Intent.ACTION_CALL);
+            Intent i = new Intent(Intent.ACTION_CALL);
             i.setData(Uri.parse("tel:192"));
-
 
             if (ContextCompat.checkSelfPermission(getApplicationContext(),
                             Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
 
-                ActivityCompat.requestPermissions((Activity) getApplicationContext(),
+                //Request Permission
+                ActivityCompat.requestPermissions(MainActivity.this,
                                                     new String[]{Manifest.permission.CALL_PHONE},
                                                     MY_PERMISSIONS_REQUEST_CALL_PHONE);
 
@@ -234,7 +239,7 @@ public class MainActivity extends AppCompatActivity
                 } catch(SecurityException e) {
                     e.printStackTrace();
                 }
-            }*/
+            }
         }
     };
 
