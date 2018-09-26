@@ -20,4 +20,16 @@
 
     <string name="play_again_desc">To see the welcome slider again, goto Settings -> apps -> welcome slider -> clear data</string>
     <string name="play_again">Play Again</string>
+    
+    <string-array name="query_suggestions_test">
+        <item>Hospital Abacaxi</item>
+        <item>Hospital Banana</item>
+        <item>Hospital Caju</item>
+        <item>Hospital Damasco</item>
+        <item>Hospital Framboesa</item>
+        <item>Hospital Goiaba</item>
+        <item>Hospital Jamelão</item>
+        <item>Hospital Laranja </item>
+        <item>Hospital Melancia</item>
+    </string-array>
 </resources>

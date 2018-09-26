@@ -3,18 +3,20 @@
 
     <item
         android:id="@+id/btnListByHospitais"
+        android:checked="true"
         android:icon="@drawable/ic_coracao_12dp"
-        android:title="Seviços"
-        />
+        android:title="Seviços" />
 
-   <item android:id="@+id/btnListByTag"
+    <item
+        android:id="@+id/btnListByTag"
+        android:checked="true"
         android:icon="@drawable/ic_hospital_12dp"
-        android:title="Todos"
-        />
+        android:title="Todos" />
 
-   <item android:id="@+id/btnListByCloser"
+    <item
+        android:id="@+id/btnListByCloser"
+        android:checked="false"
         android:icon="@drawable/ic_mais_proximo_24dp"
-        android:title="Perto"
-        />
+        android:title="Perto" />
 
 </menu>
