@@ -9,9 +9,12 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import seven.team.com.meuhospital.R;
-import seven.team.com.meuhospital.model.Hospital;
+import seven.team.com.meuhospital.activity.HospitalsListActivity;
+import seven.team.com.meuhospital.activity.MainActivity;
+import seven.team.com.meuhospital.model.HospitalModel;
 
 
 /*
@@ -26,12 +29,17 @@ import seven.team.com.meuhospital.model.Hospital;
 
 public class HospitaisListAdapter extends RecyclerView.Adapter<HospitaisListAdapter.HospitaisListViewHolder> {
 
-    private List<Hospital> hosptalList;
+    private List<HospitalModel> hosptalList;
+    private List<HospitalModel> hospitalListSearch;
 
-    public HospitaisListAdapter(List<Hospital> hosptalList) {
+    public HospitaisListAdapter(List<HospitalModel> hosptalList) {
         this.hosptalList = hosptalList;
+        this.hospitalListSearch = new ArrayList<>();
+        this.hospitalListSearch = HospitalsListActivity.hospitalModelList;
     }
 
+
+    /////////////////////  Implemented Methods  /////////////////////////////////
     @NonNull
     @Override
     public HospitaisListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -46,11 +54,11 @@ public class HospitaisListAdapter extends RecyclerView.Adapter<HospitaisListAdap
     @Override
     public void onBindViewHolder(@NonNull HospitaisListViewHolder holder, int position) {
 
-        Hospital hospital = hosptalList.get(position);
-        holder.idHospital.setText(String.valueOf(hospital.getIdHospital()));
-        holder.nome.setText(hospital.getNome());
-        holder.tipo.setText(hospital.getTipo());
-        String distancia = String.valueOf(hospital.getDistancia()) + " Km";
+        HospitalModel hospitalModel = hosptalList.get(position);
+        holder.idHospital.setText(String.valueOf(hospitalModel.getIdHospital()));
+        holder.nome.setText(hospitalModel.getNome());
+        holder.tipo.setText(hospitalModel.getTipo());
+        String distancia = String.valueOf(hospitalModel.getDistancia()) + " Km";
         holder.distancia.setText(distancia);
     }
 
@@ -58,6 +66,9 @@ public class HospitaisListAdapter extends RecyclerView.Adapter<HospitaisListAdap
     public int getItemCount() {
         return hosptalList.size();
     }
+
+
+    ////////////////////// Other //////////////////////////
 
     public class HospitaisListViewHolder extends RecyclerView.ViewHolder{
 
@@ -75,5 +86,22 @@ public class HospitaisListAdapter extends RecyclerView.Adapter<HospitaisListAdap
             tipo = itemView.findViewById(R.id.textType);
 
         }
+    }
+
+    // Filter Class
+    public void filter(String typed) {
+        typed = typed.toLowerCase(Locale.getDefault());
+        HospitalsListActivity.hospitalModelList.clear();
+
+        if (typed.length() == 0) {
+            HospitalsListActivity.hospitalModelList.addAll(hospitalListSearch);
+        } else {
+            for (HospitalModel wp : hospitalListSearch) {
+                if (wp.getNome().toLowerCase(Locale.getDefault()).contains(typed)) {
+                    HospitalsListActivity.hospitalModelList.add(wp);
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 }
